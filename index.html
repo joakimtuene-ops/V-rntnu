@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Vær Ålesund</title>
+  <style>
+    html, body { margin:0; height:100%; background:transparent; }
+    body{
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-family:Arial,Helvetica,sans-serif;
+      color:#fff;
+      background:#0b2a4a;
+      text-align:center;
+    }
+    #temp{ font-size:72px; font-weight:800; }
+    #wind{ font-size:24px; opacity:0.85; margin-top:8px; }
+  </style>
+</head>
+<body>
+  <div>
+    <div id="temp">--°C</div>
+    <div id="wind"></div>
+  </div>
+
+  <script type="text/javascript">
+  (function () {
+    function setText(id, txt){
+      var el = document.getElementById(id);
+      if (el) el.innerText = txt;
+    }
+
+    function loadWeather(){
+      var url = "https://api.open-meteo.com/v1/forecast"
+        + "?latitude=62.4722&longitude=6.1495"
+        + "&current_weather=true&timezone=Europe%2FOslo";
+
+      var xhr = new XMLHttpRequest();
+      xhr.open("GET", url, true);
+      xhr.onreadystatechange = function () {
+        if (xhr.readyState !== 4) return;
+
+        if (xhr.status < 200 || xhr.status >= 300) {
+          setText("temp", "--°C");
+          setText("wind", "");
+          return;
+        }
+
+        try {
+          var data = JSON.parse(xhr.responseText);
+          var cw = data.current_weather;
+          setText("temp", Math.round(cw.temperature) + "°C");
+          setText("wind", "Vind: " + Math.round(cw.windspeed) + " m/s");
+        } catch (e) {
+          setText("temp", "--°C");
+          setText("wind", "");
+        }
+      };
+      xhr.send();
+    }
+
+    loadWeather();
+    setInterval(loadWeather, 600000);
+  })();
+  </script>
+</body>
+</html>
