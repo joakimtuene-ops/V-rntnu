@@ -2,28 +2,116 @@
 <html lang="no">
 <head>
   <meta charset="utf-8">
-  <title>Entur tavle</title>
-  <meta http-equiv="refresh" content="300">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Entur – Infoskjerm</title>
+
+  <!-- Auto-reload: sett sekunder (0 = av) -->
+  <script>
+    (function () {
+      var RELOAD_SECONDS = 300; // 5 minutter
+      if (RELOAD_SECONDS > 0) {
+        setTimeout(function () {
+          location.reload(true);
+        }, RELOAD_SECONDS * 1000);
+      }
+    })();
+  </script>
+
   <style>
+    :root { color-scheme: dark; }
+
     html, body {
       margin: 0;
+      padding: 0;
       width: 100%;
       height: 100%;
+      background: #000;
       overflow: hidden;
+    }
+
+    /* Container som alltid fyller skjermen */
+    #container {
+      position: relative;
+      width: 100%;
+      height: 100%;
       background: #000;
     }
-    iframe {
-      border: 0;
+
+    /* Entur-tavla */
+    #entur {
+      position: absolute;
+      inset: 0;
       width: 100%;
       height: 100%;
+      border: 0;
+      background: #000;
+    }
+
+    /* Fallback overlay */
+    #fallback {
+      position: absolute;
+      inset: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+      text-align: center;
+      font-family: Arial, Helvetica, sans-serif;
+      font-size: 28px;
+      line-height: 1.4;
+      color: #fff;
+      background: #000;
+      z-index: 10;
+      opacity: 0;
+      pointer-events: none;
+      transition: opacity 0.4s ease;
+    }
+
+    #fallback.visible {
+      opacity: 1;
+      pointer-events: auto;
     }
   </style>
 </head>
-<body>
-  <iframe
-    src="https://vis-tavla.entur.no/8eia7hcPFXi5Drhwjf0t"
-    allowfullscreen>
-  </iframe>
 
+<body>
+  <div id="container">
+
+    <iframe
+      id="entur"
+      src="https://vis-tavla.entur.no/8eia7hcPFXi5Drhwjf0t"
+      loading="eager"
+      allowfullscreen
+      referrerpolicy="no-referrer">
+    </iframe>
+
+    <div id="fallback">
+      Entur-tavla kunne ikke lastes.<br>
+      Skjermen forsøker å oppdatere automatisk.
+    </div>
+
+  </div>
+
+  <script>
+    (function () {
+      var iframe = document.getElementById("entur");
+      var fallback = document.getElementById("fallback");
+      var shown = false;
+
+      function showFallback() {
+        if (shown) return;
+        shown = true;
+        fallback.className = "visible";
+      }
+
+      // Hvis Entur ikke har lastet etter 12 sek → fallback
+      var timeout = setTimeout(showFallback, 12000);
+
+      iframe.addEventListener("load", function () {
+        clearTimeout(timeout);
+        fallback.className = "";
+      });
+    })();
+  </script>
 </body>
 </html>
