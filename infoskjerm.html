@@ -1,0 +1,286 @@
+<!doctype html>
+<html lang="no">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Ålesund – Tavla (størst) + Vær + NRK RSS</title>
+  <style>
+    :root{
+      --border:#e9e9e9;
+      --muted:#666;
+      --bg:#fafafa;
+      --card:#fff;
+    }
+    *{ box-sizing:border-box; }
+    body{
+      margin:0;
+      font-family: system-ui,-apple-system,Segoe UI,Roboto,Arial;
+      line-height:1.45;
+      background:var(--bg);
+    }
+    header{
+      position:sticky; top:0; z-index:10;
+      background:#fff; border-bottom:1px solid var(--border);
+    }
+    .wrap{ max-width:1200px; margin:0 auto; padding: 1rem; }
+    h1{ margin:.25rem 0 .6rem; font-size:1.2rem; }
+    .topbar{ display:flex; gap:.75rem; flex-wrap:wrap; align-items:center; justify-content:space-between; }
+    .status{ color:var(--muted); font-size:.95rem; }
+    button{
+      padding:.55rem .85rem;
+      cursor:pointer;
+      border:1px solid var(--border);
+      background:#fff;
+      border-radius:10px;
+    }
+    .error{ color:#b00020; white-space:pre-wrap; margin-top:.5rem; }
+
+    main .wrap{ padding-top: 1rem; padding-bottom: 2.5rem; }
+
+    /* Layout: vær til venstre, tavla + rss til høyre */
+    .layout{
+      display:grid;
+      gap:1rem;
+      grid-template-columns: 340px 1fr;
+      align-items:start;
+    }
+    @media (max-width: 980px){
+      .layout{ grid-template-columns: 1fr; }
+    }
+
+    .card{
+      background:var(--card);
+      border:1px solid var(--border);
+      border-radius:16px;
+      padding:1rem;
+      box-shadow: 0 1px 0 rgba(0,0,0,.03);
+    }
+    .card h2{ margin:0 0 .25rem; font-size:1.05rem; }
+    .meta{ color:var(--muted); font-size:.92rem; margin:.25rem 0 .75rem; }
+
+    /* Weather: større skrift */
+    .weather-kpi{
+      border:1px solid var(--border);
+      border-radius:14px;
+      padding:1rem;
+      margin:.75rem 0;
+    }
+    .kpi-label{ color:var(--muted); font-size:.95rem; }
+    .kpi-value{ font-size:2.1rem; font-weight:800; margin-top:.15rem; }
+    .kpi-sub{ color:var(--muted); font-size:1.05rem; margin-top:.25rem; }
+    .small{ color:var(--muted); font-size:.95rem; }
+
+    /* Tavla: desidert størst plass */
+    .iframe-wrap{
+      border:1px solid var(--border);
+      border-radius:14px;
+      overflow:hidden;
+      background:#fff;
+    }
+    iframe{
+      width:100%;
+      border:0;
+      display:block;
+      height: 70vh;         /* størst */
+      min-height: 560px;    /* sikrer stor i desktop */
+    }
+    @media (max-width: 980px){
+      iframe{ height: 60vh; min-height: 520px; }
+    }
+
+    /* RSS under tavla */
+    ul{ margin:0; padding-left: 1.1rem; }
+    li{ margin:.8rem 0; }
+    a{ color:inherit; }
+    a:hover{ text-decoration:underline; }
+    .item-title{ font-weight:650; }
+    .item-date{ color:#777; font-size:.9rem; margin-top:.15rem; }
+    .divider{ height:1px; background:var(--border); margin: .9rem 0; }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="wrap">
+      <div class="topbar">
+        <div>
+          <h1>Ålesund – Entur Tavla + Vær + NRK MR RSS</h1>
+          <div id="status" class="status"></div>
+        </div>
+        <button id="refresh">Oppdater</button>
+      </div>
+      <div id="globalError" class="error"></div>
+    </div>
+  </header>
+
+  <main>
+    <div class="wrap">
+      <div class="layout">
+
+        <!-- VENSTRE: VÆR -->
+        <section class="card">
+          <h2>Været i Ålesund</h2>
+          <div class="meta">Kilde: Open-Meteo (MET Norway)</div>
+
+          <div class="weather-kpi">
+            <div class="kpi-label">Temperatur</div>
+            <div class="kpi-value" id="wTemp">–</div>
+            <div class="kpi-sub" id="wFeels">Føles som –</div>
+          </div>
+
+          <div class="weather-kpi">
+            <div class="kpi-label">Vind</div>
+            <div class="kpi-value" id="wWind">–</div>
+            <div class="kpi-sub" id="wGust">Kast –</div>
+          </div>
+
+          <div class="weather-kpi">
+            <div class="kpi-label">Nedbør</div>
+            <div class="kpi-value" id="wPrec">–</div>
+            <div class="kpi-sub" id="wCloud">Skydekke –</div>
+          </div>
+
+          <div class="divider"></div>
+          <div class="small" id="wUpdated"></div>
+          <div class="error" id="weatherError"></div>
+        </section>
+
+        <!-- HØYRE: TAVLA (STØRST) + RSS UNDER -->
+        <div style="display:grid; gap:1rem;">
+          <section class="card">
+            <h2>Entur Tavla</h2>
+            <div class="meta">
+              <a href="https://vis-tavla.entur.no/8eia7hcPFXi5Drhwjf0t" target="_blank" rel="noopener">
+                Åpne i nytt vindu
+              </a>
+            </div>
+            <div class="iframe-wrap">
+              <iframe
+                src="https://vis-tavla.entur.no/8eia7hcPFXi5Drhwjf0t"
+                loading="lazy"
+                referrerpolicy="no-referrer"
+                title="Entur Tavla">
+              </iframe>
+            </div>
+          </section>
+
+          <section class="card">
+            <h2>NRK Møre og Romsdal – Siste</h2>
+            <div class="meta">
+              <a href="https://www.nrk.no/mr/siste.rss" target="_blank" rel="noopener">Åpne RSS</a>
+              · <span id="rssCount">–</span>
+            </div>
+            <ul id="rssItems"></ul>
+            <div class="error" id="rssError"></div>
+          </section>
+        </div>
+
+      </div>
+    </div>
+  </main>
+
+  <script>
+    // ===== KONFIG =====
+    const WEATHER_URL =
+      "https://api.open-meteo.com/v1/forecast" +
+      "?latitude=62.4722&longitude=6.1549" +
+      "&current=temperature_2m,apparent_temperature,precipitation,cloud_cover,wind_speed_10m,wind_gusts_10m" +
+      "&timezone=Europe%2FOslo";
+
+    const RSS_URL = "https://www.nrk.no/mr/siste.rss";
+    const RSS_PROXY = url => "https://api.allorigins.win/raw?url=" + encodeURIComponent(url);
+
+    // ===== UI =====
+    const wTemp = document.getElementById("wTemp");
+    const wFeels = document.getElementById("wFeels");
+    const wWind = document.getElementById("wWind");
+    const wGust = document.getElementById("wGust");
+    const wPrec = document.getElementById("wPrec");
+    const wCloud = document.getElementById("wCloud");
+    const wUpdated = document.getElementById("wUpdated");
+    const weatherError = document.getElementById("weatherError");
+
+    const rssItemsEl = document.getElementById("rssItems");
+    const rssCountEl = document.getElementById("rssCount");
+    const rssErrorEl = document.getElementById("rssError");
+
+    const statusEl = document.getElementById("status");
+    const globalErrorEl = document.getElementById("globalError");
+
+    function stripHtml(html) {
+      const d = document.createElement("div");
+      d.innerHTML = html;
+      return (d.textContent || "").trim();
+    }
+    function nice(n, unit="") {
+      return (n === null || n === undefined || Number.isNaN(n)) ? "–" : Math.round(n) + unit;
+    }
+    function safeText(node) {
+      return node ? (node.textContent || "").trim() : "";
+    }
+
+    // ===== LOAD WEATHER =====
+    async function loadWeather() {
+      weatherError.textContent = "";
+      const res = await fetch(WEATHER_URL, { cache:"no-store" });
+      if (!res.ok) throw new Error("Værdata utilgjengelig");
+      const d = await res.json();
+      const c = d.current;
+
+      wTemp.textContent = nice(c.temperature_2m, "°");
+      wFeels.textContent = "Føles som " + nice(c.apparent_temperature, "°");
+      wWind.textContent = nice(c.wind_speed_10m, " m/s");
+      wGust.textContent = "Kast " + nice(c.wind_gusts_10m, " m/s");
+      wPrec.textContent = nice(c.precipitation, " mm");
+      wCloud.textContent = "Skydekke " + nice(c.cloud_cover, "%");
+      wUpdated.textContent = "Oppdatert: " + (c.time ? new Date(c.time).toLocaleString("no-NO") : new Date().toLocaleString("no-NO"));
+    }
+
+    // ===== LOAD RSS =====
+    async function loadRss() {
+      rssErrorEl.textContent = "";
+      rssItemsEl.innerHTML = "";
+      rssCountEl.textContent = "–";
+
+      const res = await fetch(RSS_PROXY(RSS_URL), { cache:"no-store" });
+      if (!res.ok) throw new Error("RSS utilgjengelig");
+      const xml = await res.text();
+      const doc = new DOMParser().parseFromString(xml, "text/xml");
+      const items = [...doc.querySelectorAll("item")].slice(0, 25);
+
+      rssCountEl.textContent = items.length + " saker";
+
+      for (const it of items) {
+        const title = safeText(it.querySelector("title")) || "(uten tittel)";
+        const link  = safeText(it.querySelector("link")) || "#";
+        const pub   = safeText(it.querySelector("pubDate"));
+        const desc  = stripHtml(safeText(it.querySelector("description")));
+
+        const li = document.createElement("li");
+        li.innerHTML = `
+          <div class="item-title">
+            <a href="${link}" target="_blank" rel="noopener">${title}</a>
+          </div>
+          ${pub ? `<div class="item-date">${new Date(pub).toLocaleString("no-NO")}</div>` : ""}
+          ${desc ? `<div>${desc}</div>` : ""}
+        `;
+        rssItemsEl.appendChild(li);
+      }
+    }
+
+    async function loadAll() {
+      globalErrorEl.textContent = "";
+      statusEl.textContent = "Laster…";
+      try {
+        await Promise.all([loadWeather(), loadRss()]);
+        statusEl.textContent = "Oppdatert: " + new Date().toLocaleString("no-NO");
+      } catch (e) {
+        statusEl.textContent = "";
+        globalErrorEl.textContent = e.message || String(e);
+      }
+    }
+
+    document.getElementById("refresh").addEventListener("click", loadAll);
+    loadAll();
+  </script>
+</body>
+</html>
